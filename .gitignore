@@ -1,0 +1,4 @@
+Makefile.deps
+arm64*
+x86_64*
+i386*
