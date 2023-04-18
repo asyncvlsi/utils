@@ -34,7 +34,7 @@ new_cell = False
 
 cell_expr = re.compile("cell\s*\(\s*([a-zA-Z_0-9]+)\s*\)")
 pin_expr = re.compile("pin\s*\(\s*([a-zA-Z_0-9]+)\s*\)")
-dir_expr = re.compile("direction\s*:\s*(input|output|bidir)\s*;")
+dir_expr = re.compile("direction\s*:\s*\"?(input|output|bidir)\"?\s*;")
 
 def print_cell(nm, inl, outl, bidirl):
     print('export defcell', nm, '(',end='')
