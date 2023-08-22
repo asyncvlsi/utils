@@ -32,8 +32,8 @@ import re
 #
 new_cell = False
 
-cell_expr = re.compile("cell\s*\(\s*([a-zA-Z_0-9]+)\s*\)")
-pin_expr = re.compile("pin\s*\(\s*([a-zA-Z_0-9]+)\s*\)")
+cell_expr = re.compile("cell\s*\(\"?\s*([a-zA-Z_0-9]+)\"?\s*\)")
+pin_expr = re.compile("pin\s*\(\s*\"?([a-zA-Z_0-9]+)\"?\s*\)")
 dir_expr = re.compile("direction\s*:\s*\"?(input|output|bidir)\"?\s*;")
 
 def print_cell(nm, inl, outl, bidirl):
@@ -53,6 +53,8 @@ def print_cell(nm, inl, outl, bidirl):
         print('bool', ", ".join(bidirl), end='')
     print(");")
     
+
+found_pin = False
 
 for line in sys.stdin.readlines():
     line.rstrip()
