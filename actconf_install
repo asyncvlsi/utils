@@ -1,0 +1,140 @@
+#!/bin/sh
+
+check_echo=0
+myecho()
+{
+  if [ $check_echo -eq 0 ]
+  then
+        check_echo=1
+        count=`echo -n "" | wc -c | awk '{print $1}'`
+        if [ $count -gt 0 ]
+        then
+                check_echo=2
+        fi
+  fi
+  if [ $check_echo -eq 1 ]
+  then
+        echo -n "$@"
+  else
+        echo "$@\c"
+  fi
+}
+
+if [ $# -ne 1 ]
+then
+	echo "Usage: $0 <filename>"
+	exit 1
+fi
+
+if tar -tzf $1 >/dev/null 2>&1 
+then
+	:
+else
+	echo "File $1 is not in the right format. Please check the technology package."
+	exit 1
+fi
+
+#
+# check the contents. Each file must be of the form ./<conf>/<no-slashes>
+# must include: global.conf, prs2net.conf, models.sp
+#
+
+techname="__none__"
+
+found_global=0
+found_prs2net=0
+found_model=0
+
+for i in `tar -tzf $1 2>&1` __dummy__
+do
+	if [ $i != "__dummy__" ]
+	then
+		if [ $techname = "__none__" ]
+		then	
+			techname=`expr $i : '\([^/]*\)/[^/]*$'`
+		fi
+		tech2=`expr $i : '\([^/]*\)/[^/]*$'`
+		if [ x$tech2 = "x" -o x$tech2 != x$techname ]
+		then
+			err=1
+			techname="__none__"
+		else
+			file=`expr $i : $techname'/\([^/]*\)$'`
+			if [ "x$file" = "xglobal.conf" ]
+			then
+				found_global=1
+			fi
+			if [ "x$file" = "xprs2net.conf" ]
+			then
+				found_prs2net=1
+			fi
+			if [ "x$file" = "xmodels.sp" ]
+			then
+				found_model=1
+			fi
+		fi
+	fi
+done
+
+if [ $err ]
+then
+	echo "Configuration file package $1 is not in the right format."
+	exit 1
+fi
+
+if [ $found_global -eq 0 ]
+then
+	echo "Package is missing global.conf file."
+	exit 1
+fi
+
+if [ $found_prs2net -eq 0 ]
+then
+	echo "Package is missing prs2net.conf file."
+	exit 1
+fi
+
+if [ $found_model -eq 0 ]
+then
+	echo "Package is missing models.sp file."
+	exit 1
+fi
+
+if [ x$ACT_HOME = x ]
+then
+	echo "Please set the ACT_HOME environment variable to your ACT installation"
+	exit 1
+fi
+
+if [ ! -d $ACT_HOME/conf ]
+then
+	echo "Missing directory $ACT_HOME/conf."
+	echo "Environment variable ACT_HOME is set to: $ACT_HOME"
+	echo "Please check your ACT_HOME or ACT installation."
+	exit 1
+fi
+
+echo "Found technology configuration files for: $techname"
+myecho "Install? (y/n) "
+read n
+
+if [ "x$n" != "xy" ]
+then
+	echo "Aborting!"
+	exit 1
+fi
+
+if [ -d $ACT_HOME/conf/$techname ]
+then
+   echo "Found existing configuration directory for $techname"
+   myecho "Overwrite? (y/n) "
+   read n
+   if [ "x$n" != "xy" ]
+   then
+	echo "Aborting!"
+	exit 1
+   fi
+fi
+	
+echo "Installing configuration files..."
+cat $1 | (cd $ACT_HOME/conf; tar -xzf -)

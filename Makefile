@@ -15,7 +15,7 @@
 #  limitations under the License.
 #  
 #-------------------------------------------------------------------------
-TARGETSCRIPTS=lib2act.py
+TARGETSCRIPTS=lib2act.py actconf_install
 
 include $(ACT_HOME)/scripts/Makefile.std
 
